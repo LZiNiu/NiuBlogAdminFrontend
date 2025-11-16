@@ -58,13 +58,19 @@ declare namespace Api {
 
     /** 启用状态 */
     type EnableStatus = '1' | '2'
+
+    interface Response<T = any> {
+      code: number
+      message: string
+      data: T | null
+    }
   }
 
   /** 认证类型 */
   namespace Auth {
     /** 登录参数 */
     interface LoginParams {
-      userName: string
+      username: string
       password: string
     }
 
@@ -79,10 +85,41 @@ declare namespace Api {
       buttons: string[]
       roles: string[]
       userId: number
-      userName: string
+      username: string
       email: string
       avatar?: string
     }
+  }
+
+  namespace UserManage {
+    type UserList = Api.Common.PaginatedResponse<UserListItem>
+    /** 用户列表 */
+    interface UserListItem {
+      id: number
+      username: string
+      email: string
+      nickname: string
+      avatar_url: string
+      bio: string
+      role: string
+      is_active: boolean
+      password_hash: string
+      created_at: string | Date
+      updated_at: string | Date
+    }
+
+    interface UserCreateParams {
+      username: string
+      email: string
+      password: string
+      nickname: string
+      role: string
+    }
+    /** 用户搜索参数 */
+    type UserSearchParams = Partial<
+      Pick<UserListItem, 'id' | 'username' | 'role' | 'is_active' | 'email' | 'status'> &
+        Api.Common.CommonSearchParams
+    >
   }
 
   /** 系统管理类型 */
