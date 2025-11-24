@@ -3,7 +3,7 @@ import { dashboardRoutes } from './dashboard'
 // import { systemRoutes } from './system'
 import { resultRoutes } from './result'
 import { exceptionRoutes } from './exception'
-import { articleManagementRoutes } from './article'
+import { articleManagementRoutes, articleEditRoutes } from './article'
 import { categoryManagementRoutes } from './category'
 import { tagManagementRoutes } from './tag'
 import { userManagementRoutes } from './user'
@@ -21,5 +21,6 @@ export const routeModules: AppRouteRecord[] = [
   tagManagementRoutes,
   commentManagementRoutes,
   resultRoutes,
-  exceptionRoutes
+  exceptionRoutes,
+  articleEditRoutes
 ]

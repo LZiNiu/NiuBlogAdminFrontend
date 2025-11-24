@@ -13,3 +13,15 @@ export const articleManagementRoutes: AppRouteRecord = {
     roles: ['R_SUPER', 'R_ADMIN']
   }
 }
+
+export const articleEditRoutes: AppRouteRecord = {
+  path: '/article-management/article',
+  name: 'ArticleEdit',
+  component: '/article-management/article-edit',
+  meta: {
+    title: '文章发布',
+    keepAlive: true,
+    roles: ['R_SUPER', 'R_ADMIN'],
+    isHide: true
+  }
+}
