@@ -21,10 +21,8 @@ export function fetchLogin(params: Api.Auth.LoginParams) {
 export function fetchGetUserInfo() {
   // return request.get<Api.Auth.UserInfo>({
   //   url: '/auth/user/info'
-  //   // 自定义请求头
-  //   // headers: {
-  //   //   'X-Custom-Header': 'your-custom-value'
-  //   // }
   // })
-  return <Api.Auth.UserInfo | null>null
+  return request.get<Api.Auth.UserInfo>({
+    url: '/admin/users/info'
+  })
 }
