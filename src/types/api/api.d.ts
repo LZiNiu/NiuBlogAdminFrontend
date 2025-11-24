@@ -84,14 +84,15 @@ declare namespace Api {
     interface UserInfo {
       buttons: string[]
       roles: string[]
-      userId: number
+      id: number
       username: string
       email: string
-      avatar?: string
+      avatar_url?: string
+      nickname: string
     }
   }
 
-  namespace UserManage {
+  namespace CattleBlog {
     type UserList = Api.Common.PaginatedResponse<UserListItem>
     /** 用户列表 */
     interface UserListItem {
@@ -102,8 +103,7 @@ declare namespace Api {
       avatar_url: string
       bio: string
       role: string
-      is_active: boolean
-      password_hash: string
+      is_active: number
       created_at: string | Date
       updated_at: string | Date
     }
@@ -115,11 +115,75 @@ declare namespace Api {
       nickname: string
       role: string
     }
+    interface UserUpdateParams {
+      email: string
+      password?: string
+      nickname: string
+      role: string
+      is_active: string
+      bio?: string
+      avatar_url?: string
+    }
     /** 用户搜索参数 */
     type UserSearchParams = Partial<
-      Pick<UserListItem, 'id' | 'username' | 'role' | 'is_active' | 'email' | 'status'> &
+      Pick<UserListItem, 'id' | 'username' | 'role' | 'is_active' | 'email' | 'is_active'> &
         Api.Common.CommonSearchParams
     >
+    // 分类数据类型
+    interface CategoryItem {
+      id: number
+      name: string
+      description?: string
+      create_time?: string
+      update_time?: string
+    }
+    type CategoryList = Api.Common.PaginatedResponse<CategoryItem>
+    interface CategoryDTO {
+      name: string
+      description: string
+    }
+    // 文章数据类型
+    type ArticleList = Api.Common.PaginatedResponse<ArticleItem>
+    interface ArticleItem {
+      id: number
+      title: string
+      summary?: string
+      content?: string
+      cover_url?: string
+      author_id: string
+      author_name: string
+      post_status: string
+      category_ids?: number[]
+      category_names?: string[]
+      tag_ids?: number[]
+      tag_names?: string[]
+      create_time: string | Date
+      update_time: string | Date
+    }
+    interface ArticleCreateParams {
+      title: string
+      author_name: string
+      category_ids?: number[]
+      tag_ids?: number[]
+      summary?: string
+      content: string
+      cover_url?: string
+      content: string
+    }
+    type ArticleSearchParams = Partial<
+      Pick<ArticleItem, 'id' | 'title' | 'author' | 'category_id' | 'is_published'> &
+        Api.Common.CommonSearchParams
+    >
+    // 标签数据类型
+    type TagList = Api.Common.PaginatedResponse<TagItem>
+    interface TagItem {
+      id: number
+      name: string
+      description?: string
+      create_time?: string
+      update_time?: string
+    }
+    type TagSearchParams = Partial<Pick<TagItem, 'name'> & Api.Common.CommonSearchParams>
   }
 
   /** 系统管理类型 */

@@ -317,7 +317,7 @@
         "email": "邮箱",
         "is_active": {
           "disabled": "禁用",
-          "enabled": "启用",
+          "enabled": "正常",
           "unknown": "未知"
         },
         "nickname": "昵称",
