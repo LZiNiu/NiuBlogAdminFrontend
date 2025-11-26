@@ -3,7 +3,7 @@ import request from '@/utils/http'
 // 获取用户列表
 export async function fetchUserList(params: Api.CattleBlog.UserSearchParams) {
   return request.get<Api.CattleBlog.UserList>({
-    url: '/admin/users',
+    url: '/admin/users/pagination',
     params
   })
 }

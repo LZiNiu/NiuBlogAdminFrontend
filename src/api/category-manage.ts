@@ -41,6 +41,7 @@ export async function fetchDeleteCategoryByName(name: string): Promise<void> {
 
 export async function fetchBatchDeleteCategories(ids: number[]): Promise<void> {
   return request.del<void>({
-    url: `/admin/categories/${ids.join(',')}`
+    url: `/admin/categories`,
+    data: ids
   })
 }

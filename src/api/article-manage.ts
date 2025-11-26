@@ -15,7 +15,7 @@ interface ArticleEdit {
 
 export async function fetchArticleList(params: Api.CattleBlog.ArticleSearchParams) {
   return request.get<Api.CattleBlog.ArticleList>({
-    url: '/admin/articles',
+    url: '/admin/articles/pagination',
     params
   })
 }
@@ -23,12 +23,6 @@ export async function fetchArticleList(params: Api.CattleBlog.ArticleSearchParam
 export async function fetchArticleEdit(id: number) {
   return request.get<ArticleEdit>({
     url: `/admin/articles/${id}/editinfo`
-  })
-}
-
-export async function fetchArticleMeta(id: number) {
-  return request.get<Api.CattleBlog.ArticleItem>({
-    url: `/admin/articles/${id}/meta`
   })
 }
 
@@ -60,7 +54,7 @@ export async function fetchDeleteArticle(id: number) {
 
 export async function fetchBatchDeleteArticles(ids: number[]) {
   return request.del<void>({
-    url: `/admin/articles/`,
+    url: `/admin/articles/batch`,
     data: ids
   })
 }

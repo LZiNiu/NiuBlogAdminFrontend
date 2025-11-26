@@ -13,17 +13,17 @@ export async function fetchTagList(params: Api.CattleBlog.TagSearchParams) {
   })
 }
 
-export async function fetchCreateTag(name: string) {
+export async function fetchCreateTag(name: string, description: string = '') {
   return request.post<Api.CattleBlog.TagItem>({
     url: '/admin/tags',
-    params: { name }
+    params: { name, description }
   })
 }
 
-export async function fetchUpdateTag(id: number, name: string) {
+export async function fetchUpdateTag(id: number, name: string, description: string) {
   return request.put<void>({
     url: `/admin/tags/${id}`,
-    params: { name }
+    params: { name, description }
   })
 }
 
