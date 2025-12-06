@@ -1,19 +1,22 @@
 <!-- 标签管理页面 -->
 <template>
-  <div class="tag-management-page art-full-height">
+  <div class="art-full-height">
     <ElCard class="art-table-card" shadow="never">
-      <!-- 表格头部 -->
       <ArtTableHeader v-model:columns="columnChecks" :loading="loading" @refresh="refreshData">
         <template #left>
           <ElSpace wrap>
-            <ElButton @click="showDialog('add')" v-ripple>
-              {{ $t('table.button.add.tag') }}
-            </ElButton>
+            <ElButton @click="showDialog('add')" v-ripple>添加</ElButton>
+            <ElButton
+              @click="handleBatchDelete"
+              v-ripple
+              type="danger"
+              :disabled="selectedRows.length === 0"
+              >批量删除</ElButton
+            >
           </ElSpace>
         </template>
       </ArtTableHeader>
 
-      <!-- 表格 -->
       <ArtTable
         :loading="loading"
         :data="data"
@@ -22,28 +25,25 @@
         @selection-change="handleSelectionChange"
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
-      >
-      </ArtTable>
+      ></ArtTable>
 
-      <!-- 标签弹窗 -->
       <ElDialog
         v-model="dialogVisible"
-        :title="dialogType === 'add' ? $t('table.button.add.tag') : $t('table.button.edit')"
-        width="500px"
-        @close="handleDialogClose"
+        :title="dialogType === 'add' ? '新增标签' : '编辑标签'"
+        align-center
       >
-        <ElForm ref="formRef" :model="currentTagData" :rules="formRules" label-width="100px">
-          <ElFormItem :label="$t('table.column.tag.name')" prop="name">
-            <ElInput
-              v-model="currentTagData.name"
-              :placeholder="$t('table.column.tag.placeholdername')"
-            />
-          </ElFormItem>
-        </ElForm>
-
+        <ArtForm
+          v-model="formModel"
+          :items="formItems"
+          :span="6"
+          :show-submit="false"
+          :show-reset="false"
+        />
         <template #footer>
-          <ElButton @click="dialogVisible = false">{{ $t('common.cancel') }}</ElButton>
-          <ElButton type="primary" @click="handleDialogSubmit">{{ $t('common.confirm') }}</ElButton>
+          <div style="text-align: right">
+            <ElButton @click="dialogVisible = false" style="margin-right: 8px">取消</ElButton>
+            <ElButton type="primary" @click="submitDialog">提交</ElButton>
+          </div>
         </template>
       </ElDialog>
     </ElCard>
@@ -51,98 +51,32 @@
 </template>
 
 <script setup lang="ts">
+  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+  import ArtForm from '@/components/core/forms/art-form/index.vue'
   import { useTable } from '@/hooks/core/useTable'
-  import { ElMessageBox, ElMessage, type FormInstance } from 'element-plus'
+  import { ElMessageBox, ElMessage, dayjs } from 'element-plus'
   import { DialogType } from '@/types'
-  import { h, nextTick, ref } from 'vue'
-  import { useI18n } from 'vue-i18n'
+  import {
+    fetchTagList,
+    fetchCreateTag,
+    fetchUpdateTag,
+    fetchDeleteTag,
+    fetchBatchDeleteTags
+  } from '@/api/tag-manage'
 
   defineOptions({ name: 'TagManagement' })
 
-  const { t } = useI18n()
-
-  // 标签数据类型
-  interface TagItem {
-    id: number
-    name: string
-    color: string
-    createTime: string
-    updateTime: string
-  }
-
-  // 弹窗相关
-  const formRef = ref<FormInstance>()
+  type TagListItem = Api.CattleBlog.TagItem
   const dialogType = ref<DialogType>('add')
   const dialogVisible = ref(false)
-  const currentTagData = ref<Partial<TagItem>>({
-    color: '#409EFF' // 默认颜色
-  })
+  const currentTagData = ref<Partial<TagListItem>>({})
+  const formModel = ref<Partial<TagListItem>>({})
+  const formItems: import('@/components/core/forms/art-form/index.vue').FormItem[] = [
+    { key: 'name', label: '名称', type: 'input', span: 12 },
+    { key: 'description', label: '描述', type: 'input', span: 12 }
+  ]
 
-  // 选中行
-  const selectedRows = ref<TagItem[]>([])
-
-  // 表单校验规则
-  const formRules = {
-    name: [{ required: true, message: t('table.rule.nameRequired'), trigger: 'blur' }]
-  }
-
-  // 模拟获取标签列表的函数
-  const fetchGetTagList = async (params: any) => {
-    // 模拟网络延迟
-    await new Promise((resolve) => setTimeout(resolve, 500))
-
-    // 生成模拟数据
-    const mockData: TagItem[] = [
-      {
-        id: 1,
-        name: 'Vue',
-        color: '#42b883',
-        createTime: '2023-01-15 09:30:00',
-        updateTime: '2023-01-15 09:30:00'
-      },
-      {
-        id: 2,
-        name: 'React',
-        color: '#61dafb',
-        createTime: '2023-02-20 14:22:15',
-        updateTime: '2023-02-20 14:22:15'
-      },
-      {
-        id: 3,
-        name: 'JavaScript',
-        color: '#f7df1e',
-        createTime: '2023-03-10 11:45:30',
-        updateTime: '2023-03-10 11:45:30'
-      },
-      {
-        id: 4,
-        name: 'TypeScript',
-        color: '#3178c6',
-        createTime: '2023-04-05 16:12:45',
-        updateTime: '2023-04-05 16:12:45'
-      },
-      {
-        id: 5,
-        name: 'Node.js',
-        color: '#339933',
-        createTime: '2023-05-12 08:30:00',
-        updateTime: '2023-05-12 08:30:00'
-      }
-    ]
-
-    // 模拟分页
-    const { current = 1, size = 10 } = params
-    const start = (current - 1) * size
-    const end = start + size
-    const pageData = mockData.slice(start, end)
-
-    return {
-      records: pageData,
-      total: mockData.length,
-      current,
-      size
-    }
-  }
+  const selectedRows = ref<TagListItem[]>([])
 
   const {
     columns,
@@ -154,135 +88,94 @@
     handleCurrentChange,
     refreshData
   } = useTable({
-    // 核心配置
     core: {
-      apiFn: fetchGetTagList,
-      apiParams: {
-        current: 1,
-        size: 20
-      },
+      apiFn: fetchTagList,
+      apiParams: { current: 1, size: 10 },
       columnsFactory: () => [
-        { type: 'selection' }, // 勾选列
-        { type: 'index', width: 60, label: t('table.column.index') }, // 序号
+        { type: 'selection' },
+        { type: 'index', width: 60, label: '序号' },
+        { prop: 'name', label: '名称', width: 200 },
+        { prop: 'description', label: '描述' },
         {
-          prop: 'name',
-          label: t('table.column.tag.name'),
-          formatter: (row) => {
-            return h('ElTag', { color: row.color, style: 'color: white' }, () => row.name)
-          }
-        },
-        {
-          prop: 'createTime',
-          label: t('table.column.tag.create_time')
-        },
-        {
-          prop: 'updateTime',
-          label: t('table.column.tag.update_time')
+          prop: 'created_at',
+          label: '创建时间',
+          sortable: true,
+          formatter: (row) => dayjs(row.create_time).format('YYYY-MM-DD HH:mm:ss')
         },
         {
           prop: 'operation',
-          label: t('table.column.operation'),
-          fixed: 'right', // 固定列
+          label: '操作',
+          fixed: 'right',
           formatter: (row) =>
             h('div', [
-              h(
-                'ElButton',
-                {
-                  type: 'primary',
-                  size: 'small',
-                  onClick: () => showDialog('edit', row),
-                  text: true,
-                  bg: true
-                },
-                () => t('table.button.edit')
-              ),
-              h(
-                'ElButton',
-                {
-                  type: 'danger',
-                  size: 'small',
-                  onClick: () => deleteTag(row),
-                  text: true,
-                  bg: true
-                },
-                () => t('table.button.delete')
-              )
+              h(ArtButtonTable, { type: 'edit', onClick: () => showDialog('edit', row) }),
+              h(ArtButtonTable, { type: 'delete', onClick: () => deleteTag(row) })
             ])
         }
       ]
     }
   })
 
-  /**
-   * 显示标签弹窗
-   */
-  const showDialog = (type: DialogType, row?: TagItem): void => {
+  const submitDialog = async () => {
+    if (dialogType.value === 'add') {
+      await fetchCreateTag(
+        String(formModel.value.name || ''),
+        String(formModel.value.description || '')
+      )
+    } else if (dialogType.value === 'edit' && currentTagData.value.id) {
+      await fetchUpdateTag(
+        currentTagData.value.id,
+        formModel.value.name as string,
+        formModel.value.description as string
+      )
+    }
+    ElMessage.success('提交成功')
+    dialogVisible.value = false
+    currentTagData.value = {}
+    formModel.value = {}
+    refreshData()
+  }
+
+  const showDialog = (type: DialogType, row?: TagListItem): void => {
     dialogType.value = type
-    currentTagData.value = row || { color: '#409EFF' }
+    currentTagData.value = row || {}
+    formModel.value = { ...currentTagData.value }
     nextTick(() => {
       dialogVisible.value = true
     })
   }
 
-  /**
-   * 删除标签
-   */
-  const deleteTag = (row: TagItem): void => {
-    ElMessageBox.confirm(t('common.deleteConfirmMessage'), t('common.deleteConfirmTitle'), {
-      confirmButtonText: t('common.confirm'),
-      cancelButtonText: t('common.cancel'),
+  const deleteTag = (row: TagListItem): void => {
+    ElMessageBox.confirm('确认删除？', '提示', {
+      confirmButtonText: '确认',
+      cancelButtonText: '取消',
       type: 'warning'
     })
-      .then(() => {
-        // 这里应该调用删除标签的API
-        ElMessage.success(t('common.deleteSuccess'))
+      .then(async () => {
+        await fetchDeleteTag(row.id)
+        ElMessage.success('删除成功')
         refreshData()
       })
-      .catch(() => {
-        // 用户取消删除
-      })
+      .catch(() => {})
   }
 
-  /**
-   * 处理弹窗提交事件
-   */
-  const handleDialogSubmit = async () => {
-    if (!formRef.value) return
-
-    await formRef.value.validate((valid) => {
-      if (valid) {
-        try {
-          // 这里应该调用添加或编辑标签的API
-          ElMessage.success(
-            dialogType.value === 'add' ? t('common.addSuccess') : t('common.editSuccess')
-          )
-          dialogVisible.value = false
-          refreshData()
-        } catch (error) {
-          console.error(t('common.submitError'), error)
-        }
-      }
+  const handleBatchDelete = (): void => {
+    ElMessageBox.confirm('确认批量删除？', '提示', {
+      confirmButtonText: '确认',
+      cancelButtonText: '取消',
+      type: 'warning'
     })
+      .then(async () => {
+        await fetchBatchDeleteTags(selectedRows.value.map((i) => i.id))
+        ElMessage.success('删除成功')
+        refreshData()
+      })
+      .catch(() => {})
   }
 
-  /**
-   * 处理弹窗关闭事件
-   */
-  const handleDialogClose = () => {
-    currentTagData.value = { color: '#409EFF' }
-    formRef.value?.resetFields()
-  }
-
-  /**
-   * 处理表格行选择变化
-   */
-  const handleSelectionChange = (selection: TagItem[]): void => {
+  const handleSelectionChange = (selection: TagListItem[]): void => {
     selectedRows.value = selection
   }
 </script>
 
-<style scoped lang="scss">
-  .tag-management-page {
-    // 可以添加特定样式
-  }
-</style>
+<style scoped lang="scss"></style>

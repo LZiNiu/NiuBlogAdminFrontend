@@ -128,7 +128,7 @@
           </div>
           <div class="meta-right">
             <div class="lib-header">
-              <ArtSvgIcon icon="ri:tag-fill" class="text-xl" />
+              <ArtSvgIcon icon="ri:price-tag-3-fill" class="text-xl" />
               <span>热门标签 (点击选择)</span>
             </div>
             <div class="lib-content">

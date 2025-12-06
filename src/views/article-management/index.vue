@@ -63,7 +63,7 @@
         { type: 'selection' },
         { type: 'index', width: 60, label: '序号' },
         { prop: 'title', label: '标题', width: 200 },
-        { prop: 'author', label: '作者', width: 120 },
+        { prop: 'author_name', label: '作者', width: 120 },
         {
           prop: 'post_status',
           label: '状态',
