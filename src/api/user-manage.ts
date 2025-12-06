@@ -34,7 +34,7 @@ export async function fetchBatchDeleteUser(ids: number[]) {
 export async function fetchUpdateUserStatus(userId: number, status: boolean) {
   return request.put<null>({
     url: `/admin/users/${userId}/status`,
-    params: { status: status }
+    data: { status: status }
   })
 }
 
