@@ -64,6 +64,13 @@ declare namespace Api {
       message: string
       data: T | null
     }
+
+    interface UploadResponse {
+      url: string
+    }
+    interface CreateResponse {
+      id: number
+    }
   }
 
   /** 认证类型 */
@@ -103,9 +110,9 @@ declare namespace Api {
       avatar_url: string
       bio: string
       role: string
-      is_active: number
-      created_at: string | Date
-      updated_at: string | Date
+      is_active: boolean
+      create_time: string | Date
+      update_time: string | Date
     }
 
     interface UserCreateParams {
@@ -184,6 +191,21 @@ declare namespace Api {
       update_time?: string
     }
     type TagSearchParams = Partial<Pick<TagItem, 'name'> & Api.Common.CommonSearchParams>
+
+    // 时间线事件数据类型
+    type EventType = 'coding' | 'blog' | 'life' | 'milestone'
+
+    interface TimelineEvent {
+      id: number
+      date: string // YYYY-MM-DD
+      title: string
+      content?: string
+      images?: string[] // 支持多图
+      event_type: EventType
+      link?: string // 可选的外链
+    }
+    type TimelineEventCreate = Omit<Api.CattleBlog.TimelineEvent, 'id'>
+    type TimelineEventUpdate = Partial<TimelineEventCreate>
   }
 
   /** 系统管理类型 */

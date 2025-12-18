@@ -115,11 +115,10 @@
 </template>
 
 <script setup lang="ts">
-  // import { ROLE_LIST_DATA } from '@/mock/temp/formData'
   import type { FormInstance, FormRules, UploadFile, UploadRequestOptions } from 'element-plus'
   import { Plus, Close } from '@element-plus/icons-vue'
-  // import { useUserStore } from '@/store/modules/user'
-  import { fetchCreateUser, fetchUpdateUser, fetchUpLoadAvatar } from '@/api/user-manage'
+  import { fetchCreateUser, fetchUpdateUser } from '@/api/user-manage'
+  import { upLoadImage, ImageType } from '@/api/common'
 
   // const { accessToken } = useUserStore()
   interface Props {
@@ -248,13 +247,12 @@
     try {
       console.log('formData: ', formData)
       console.log('props.userData:', props.userData)
-      const response = await fetchUpLoadAvatar(uploadData)
-      if (response.avatar_url !== null) {
+      const response = await upLoadImage(ImageType.AVATAR, uploadData)
+      if (response.url !== null) {
         // nextTick(() => {
-        formData.avatar_url = response.avatar_url
+        formData.avatar_url = response.url
         // })
       }
-      console.log('formData after upload: ', formData)
       // 上传成功
     } catch (error) {
       console.error('Upload failed:', error)

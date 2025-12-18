@@ -4,9 +4,7 @@
       <ArtTableHeader v-model:columns="columnChecks" :loading="loading" @refresh="refreshData">
         <template #left>
           <ElSpace wrap>
-            <ElButton @click="$router.push('/article-management/article')" v-ripple>
-              添加
-            </ElButton>
+            <ElButton @click="$router.push('/article-management/edit')" v-ripple> 添加 </ElButton>
             <ElButton
               @click="handleBatchDelete"
               v-ripple
@@ -40,7 +38,6 @@
     fetchDeleteArticle,
     fetchBatchDeleteArticles
   } from '@/api/article-manage'
-  // TODO: 修复跳转后状态不重置的问题
   defineOptions({ name: 'ArticleManagement' })
   const router = useRouter()
   type ArticleListItem = Api.CattleBlog.ArticleItem
@@ -103,7 +100,7 @@
             h('div', [
               h(ArtButtonTable, {
                 type: 'edit',
-                onClick: () => router.push(`/article-management/article?article_id=${row.id}`)
+                onClick: () => router.push(`/article-management/edit?article_id=${row.id}`)
               }),
               h(ArtButtonTable, { type: 'delete', onClick: () => deleteArticle(row) })
             ])

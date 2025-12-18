@@ -172,7 +172,7 @@
 <script setup lang="ts">
   import { ref, reactive, onMounted, watch } from 'vue'
   import { useRouter, useRoute } from 'vue-router'
-  import { ElMessage, ElMessageBox, type UploadFile } from 'element-plus'
+  import { dayjs, ElMessage, ElMessageBox, type UploadFile } from 'element-plus'
   import { MdEditor } from 'md-editor-v3'
   import 'md-editor-v3/lib/style.css'
   import { useUserStore } from '@/store/modules/user'
@@ -183,8 +183,10 @@
   } from '@/api/article-manage'
   import { fetchAllTags, fetchCreateTag } from '@/api/tag-manage'
   import { fetchAllCategories, fetchCreateCategory } from '@/api/category-manage'
+  import { useWorktabStore } from '@/store/modules/worktab'
 
   const userStore = useUserStore()
+  const worktabStore = useWorktabStore()
   // --- 状态管理 ---
   const router = useRouter()
   const route = useRoute()
@@ -197,23 +199,23 @@
 
   // 标签/分类库数据 (包含 ID)
   const availableCategories = ref<Api.CattleBlog.CategoryItem[]>([
-    { id: 1, name: '前端开发', description: '' },
-    { id: 2, name: '后端架构', description: '' },
-    { id: 3, name: '人工智能', description: '' },
-    { id: 4, name: 'DevOps', description: '' },
-    { id: 5, name: '生活随笔', description: '' },
-    { id: 6, name: '设计灵感', description: '' }
+    // { id: 1, name: '前端开发', description: '' },
+    // { id: 2, name: '后端架构', description: '' },
+    // { id: 3, name: '人工智能', description: '' },
+    // { id: 4, name: 'DevOps', description: '' },
+    // { id: 5, name: '生活随笔', description: '' },
+    // { id: 6, name: '设计灵感', description: '' }
   ])
   const availableTags = ref<Api.CattleBlog.TagItem[]>([
-    { id: 1, name: 'Vue3' },
-    { id: 2, name: 'React' },
-    { id: 3, name: 'Spring Boot' },
-    { id: 4, name: 'Docker' },
-    { id: 5, name: 'Redis' },
-    { id: 6, name: 'TypeScript' },
-    { id: 7, name: 'K8s' },
-    { id: 8, name: '微服务' },
-    { id: 9, name: 'Golang' }
+    // { id: 1, name: 'Vue3' },
+    // { id: 2, name: 'React' },
+    // { id: 3, name: 'Spring Boot' },
+    // { id: 4, name: 'Docker' },
+    // { id: 5, name: 'Redis' },
+    // { id: 6, name: 'TypeScript' },
+    // { id: 7, name: 'K8s' },
+    // { id: 8, name: '微服务' },
+    // { id: 9, name: 'Golang' }
   ])
 
   // 表单数据 (v-model 绑定的是 string[])
@@ -339,29 +341,38 @@
 
     if (!existsInLib) {
       try {
-        // 模拟调用 API 创建，并获取后端返回的带 ID 的新对象
-        // console.log(`[API Mock] Creating new ${type}:`, newItemName)
-        // // const res = await api.create({ name: newItemName })
-        // // 模拟返回
-        // const newId = Math.floor(Math.random() * 1000) + 100
-        const newItem =
+        // 获取新ID
+        const response =
           type === 'tag'
             ? await fetchCreateTag(newItemName)
             : await fetchCreateCategory(newItemName)
+        const newId = response.id
 
-        ElMessage.success(`已新建: ${newItemName} (ID: ${newItem.id})`)
-
+        ElMessage.success(`已新建: ${newItemName} (ID: ${newId})`)
+        // 获取时间
+        const opt_time = dayjs().format('YYYY-MM-DD HH:mm:ss').toString()
+        // 组装对象
+        const newItem = {
+          id: newId,
+          name: newItemName,
+          description: '',
+          create_time: opt_time,
+          update_time: opt_time
+        }
         // *关键步骤*：将新创建的带 ID 的对象加入本地库，以便提交时能查到 ID
         if (type === 'tag') {
-          availableTags.value.push(newItem)
+          availableTags.value.push(newItem as Api.CattleBlog.TagItem)
         } else {
-          availableCategories.value.push(newItem)
+          availableCategories.value.push(newItem as Api.CattleBlog.CategoryItem)
         }
       } catch (e) {
         ElMessage.error('创建失败')
         console.error('创建失败:', e)
-        if (type === 'tag') form.tag_names.pop()
-        else form.category_names.pop()
+        if (type === 'tag') {
+          form.tag_names.pop()
+        } else {
+          form.category_names.pop()
+        }
       }
     }
   }
@@ -481,9 +492,13 @@
         cancelButtonText: '继续编辑',
         type: 'warning'
       })
-        .then(() => router.back())
+        .then(() => {
+          worktabStore.removeTab(route.path)
+          router.back()
+        })
         .catch(() => {})
     } else {
+      worktabStore.removeTab(route.path)
       router.back()
     }
   }
@@ -493,30 +508,6 @@
   onMounted(() => {
     initPage()
   })
-
-  // 【修复关键点 2】：修改监听器
-  // watch(
-  //   () => route.query.article_id,
-  //   () => {
-  //     // console.log('[Route] path Changed:', route.path)
-  //     // console.log('current route path:', currentRoutePath)
-  //     // 如果当前路由的 path 不等于组件初始化时的 path，
-  //     // 说明用户已经跳转到了其他页面（例如 /dashboard），
-  //     // 此时虽然 query 变了（变空了），但不应该执行 initPage
-  //     if (route.path !== currentRoutePath) return
-
-  //     initPage()
-  //   }
-  // )
-  // 【核心修复】：组件复用时（例如从 id=1 切到 id=2，或者从编辑切到新增），触发此钩子
-  // 不会在处于文章编辑的同时发生id变化切换
-  // onBeforeRouteUpdate((to, from) => {
-  //   // to 是即将跳转的目标路由对象
-  //   // 只有当 article_id 发生变化时才执行
-  //   if (to.query.article_id !== from.query.article_id) {
-  //     initPage(to.query.article_id as string)
-  //   }
-  // })
 
   // 【可选修复】：如果你的项目使用了 <KeepAlive> 缓存，
   // 当你从“其他页面”切回来时，需要检查一下 URL 参数是否和当前页面内容不一致

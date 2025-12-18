@@ -7,7 +7,7 @@ import { articleManagementRoutes, articleEditRoutes } from './article'
 import { categoryManagementRoutes } from './category'
 import { tagManagementRoutes } from './tag'
 import { userManagementRoutes } from './user'
-import { commentManagementRoutes } from './comment'
+import { timelineManagementRoutes } from './timeline'
 
 /**
  * 导出所有模块化路由
@@ -19,7 +19,7 @@ export const routeModules: AppRouteRecord[] = [
   articleManagementRoutes,
   categoryManagementRoutes,
   tagManagementRoutes,
-  commentManagementRoutes,
+  timelineManagementRoutes,
   resultRoutes,
   exceptionRoutes,
   articleEditRoutes

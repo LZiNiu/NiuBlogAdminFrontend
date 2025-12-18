@@ -27,7 +27,7 @@ export async function fetchArticleEdit(id: number) {
 }
 
 export async function fetchCreateArticle(data: Api.CattleBlog.ArticleCreateParams) {
-  return request.post<void>({
+  return request.post<number>({
     url: '/admin/articles',
     data
   })

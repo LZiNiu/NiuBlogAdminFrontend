@@ -14,7 +14,7 @@ export async function fetchCategoryList(params: Api.Common.CommonSearchParams) {
 }
 
 export async function fetchCreateCategory(name: string, description: string = '') {
-  return request.post<Api.CattleBlog.CategoryItem>({
+  return request.post<Api.Common.CreateResponse>({
     url: '/admin/categories',
     params: { name, description }
   })

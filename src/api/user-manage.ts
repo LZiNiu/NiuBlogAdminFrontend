@@ -44,11 +44,3 @@ export async function fetchUpdateUser(userId: number, data: Api.CattleBlog.UserU
     data
   })
 }
-
-export async function fetchUpLoadAvatar(image: FormData) {
-  return request.post<{ avatar_url: string }>({
-    url: `/admin/users/avatar`,
-    data: image,
-    headers: { 'Content-Type': 'multipart/form-data' }
-  })
-}

@@ -215,7 +215,7 @@ export const useWorktabStore = defineStore(
       }
 
       // 如果关闭的是当前激活标签，需要激活其他标签
-      if (current.value.path === path) {
+      if (current.value.path === path && current.value.path !== '/article-management/edit') {
         const newIndex = targetIndex >= opened.value.length ? opened.value.length - 1 : targetIndex
         current.value = opened.value[newIndex]
         safeRouterPush(current.value)

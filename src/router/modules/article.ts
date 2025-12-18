@@ -15,7 +15,7 @@ export const articleManagementRoutes: AppRouteRecord = {
 }
 
 export const articleEditRoutes: AppRouteRecord = {
-  path: '/article-management/article',
+  path: '/article-management/edit',
   name: 'ArticleEdit',
   component: '/article-management/article-edit',
   meta: {

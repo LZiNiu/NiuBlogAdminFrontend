@@ -118,10 +118,10 @@
 
   const submitDialog = async () => {
     if (dialogType.value === 'add') {
-      await fetchCreateCategory({
-        name: String(formModel.value.name || ''),
-        description: String(formModel.value.description || '')
-      })
+      await fetchCreateCategory(
+        String(formModel.value.name || ''),
+        String(formModel.value.description || '')
+      )
     } else if (dialogType.value === 'edit' && currentCategoryData.value.id) {
       await fetchUpdateCategory(currentCategoryData.value.id, {
         name: formModel.value.name as string,

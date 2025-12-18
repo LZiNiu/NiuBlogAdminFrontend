@@ -14,7 +14,7 @@ export async function fetchTagList(params: Api.CattleBlog.TagSearchParams) {
 }
 
 export async function fetchCreateTag(name: string, description: string = '') {
-  return request.post<Api.CattleBlog.TagItem>({
+  return request.post<Api.Common.CreateResponse>({
     url: '/admin/tags',
     params: { name, description }
   })
